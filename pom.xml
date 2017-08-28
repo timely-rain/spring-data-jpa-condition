@@ -2,16 +2,11 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.springframework.data.jpa.provider</groupId>
+    <groupId>org.springframework.data</groupId>
     <artifactId>spring-data-jpa-condition</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.data.jpa.provider</groupId>
-            <artifactId>spring-data-jpa-condition</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
             <groupId>junit</groupId>
@@ -19,12 +14,6 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.springframework.data</groupId>-->
-        <!--<artifactId>spring-data-jpa</artifactId>-->
-        <!--<version>1.11.3.RELEASE</version>-->
-        <!--</dependency>-->
-        <!-- https://mvnrepository.com/artifact/org.springframework/spring-beans -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
@@ -49,6 +38,10 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <compilerArguments>
+                        <verbose/>
+                        <bootclasspath>${java.home}/lib/rt.jar</bootclasspath>
+                    </compilerArguments>
                     <showWarnings>true</showWarnings>
                 </configuration>
             </plugin>
@@ -61,6 +54,26 @@
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <testFailureIgnore>true</testFailureIgnore>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+    <distributionManagement>
+		<repository>
+			<id>nexus-releases</id>
+			<name>Nexus Releases Repository</name>
+			<url>http://10.28.68.180:8081/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<name>Nexus Snapshots Repository</name>
+			<url>http://10.28.68.180:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>
