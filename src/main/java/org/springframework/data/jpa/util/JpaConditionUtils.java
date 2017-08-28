@@ -1,4 +1,6 @@
-package org.springframework.data.jpa.provider;
+package org.springframework.data.jpa.util;
+
+import org.springframework.data.jpa.domain.JpaCondition;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -8,7 +10,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 /**
  * @author TianGanLin
@@ -35,16 +36,16 @@ public class JpaConditionUtils
 
     /* Property Filter */
 
-    /**
-     * 过滤器-非空
-     * @param stream Stream<PropertyDescriptor>
-     * @return Stream<PropertyDescriptor>
-     */
-    public static Stream<PropertyDescriptor> filterNotNull(
-        Stream<PropertyDescriptor> stream)
-    {
-        return stream.filter(JpaConditionUtils.notNullPredicate());
-    }
+//    /**
+//     * 过滤器-非空
+//     * @param stream Stream<PropertyDescriptor>
+//     * @return Stream<PropertyDescriptor>
+//     */
+//    public static Stream<PropertyDescriptor> filterNotNull(
+//        Stream<PropertyDescriptor> stream)
+//    {
+//        return stream.filter(JpaConditionUtils.notNullPredicate());
+//    }
 
     /**
      * 断言-非空
@@ -62,7 +63,6 @@ public class JpaConditionUtils
     public static Predicate<PropertyDescriptor> includePredicate(
         String... includes)
     {
-
         return descriptor -> {
             Arrays.sort(includes);
             String name = descriptor.getName();

@@ -1,16 +1,17 @@
-package org.springframework.data.jpa.provider;
+package org.springframework.data.jpa.domain;
 
 import com.sun.istack.internal.NotNull;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.jpa.util.JpaConditionUtils;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.Attribute;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -39,6 +40,7 @@ public class JpaCondition<T>
     /* Cache */
     private Class<? extends T> javaType;
 
+    @Deprecated
     private PropertyDescriptor[] propertyDescriptors;
 
     private Set<Attribute<? super T, ?>> attributes;
@@ -57,30 +59,25 @@ public class JpaCondition<T>
 
     /**
      * 创建属性条件
-     * @param filter 过滤器
+     * @param stream 属性流
      * @param predicate 创建条件
      * @return 条件
      */
-    public Predicate propertyPredicate(
-        Function<Stream<PropertyDescriptor>, Stream<PropertyDescriptor>> filter,
+    public Predicate propertyPredicate(Stream<PropertyDescriptor> stream,
         Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate)
     {
-        //        attributeStream().map(
-        //            attribute -> BeanUtils.getPropertyDescriptor(javaType(),
-        //                attribute.getName())).forEach(System.out::println);
-        attributeStream().forEach(
-            attribute -> System.out.println(attribute.getName()));
-        Stream<PropertyDescriptor> stream = propertyStream()
-            // 排除Object.getClass()
-            .filter(descriptor -> !Objects.equals(descriptor.getName(),
-                OBJECT_CLASS))
-            // 排除瞬态属性
-            .filter(descriptor -> !JpaConditionUtils.isTransient(root,
-                descriptor.getName()));
-        if (Objects.nonNull(filter)) // 执行过滤Lambda
-            stream = filter.apply(stream); // 保留引用，否则会导致流“耗尽”
-        Predicate[] predicates = predicate.apply(stream) // 执行条件Lambda
-            .filter(p -> p != null) // 过滤空条件
+        Stream<Predicate> predicateStream = predicate.apply(stream);
+        return toPredicate(predicateStream);
+    }
+
+    /**
+     * 生成条件断言
+     * @param predicate 条件断言流
+     * @return 条件断言
+     */
+    public Predicate toPredicate(Stream<Predicate> predicate)
+    {
+        Predicate[] predicates = predicate.filter(p -> p != null) // 过滤空条件
             .toArray(Predicate[]::new); // 转为数组
         return builder.and(predicates);
     }
@@ -88,14 +85,15 @@ public class JpaCondition<T>
     public Predicate propertyPredicate(
         Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate)
     {
-        return propertyPredicate(null, predicate);
+        Stream<Predicate> stream = predicate.apply(propertyStream());
+        return toPredicate(stream);
     }
 
     public Predicate propertyPredicateInclude(
         Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate,
         String... include)
     {
-        return propertyPredicate(stream -> stream.filter(
+        return propertyPredicate(propertyStream().filter(
             JpaConditionUtils.includePredicate(include)), predicate);
     }
 
@@ -103,9 +101,11 @@ public class JpaCondition<T>
         Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate,
         String... exclude)
     {
-        return propertyPredicate(stream -> stream.filter(
+        return propertyPredicate(propertyStream().filter(
             JpaConditionUtils.excludePredicate(exclude)), predicate);
     }
+
+    /* Properties Predicate */
 
     /**
      * Equal条件
@@ -140,7 +140,43 @@ public class JpaCondition<T>
             names);
     }
 
-    /* Tool */
+    /**
+     * Like条件
+     * @author TianGanLin
+     * @version [1.0.0, 2017-08-28]
+     * @return Predicate
+     */
+    public Predicate likes()
+    {
+        return propertyPredicate(stream -> stream.map(this::like));
+    }
+
+    /**
+     * Like条件, 包含所有names
+     * @author TianGanLin
+     * @version [1.0.0, 2017-08-28]
+     * @return Predicate
+     */
+    public Predicate likesInclude(@NotNull String... names)
+    {
+        return propertyPredicateInclude(stream -> stream.map(this::like),
+            names);
+    }
+
+    /**
+     * Like条件, 排除所有names
+     * @author TianGanLin
+     * @version [1.0.0, 2017-08-28]
+     * @return Predicate
+     */
+    public Predicate likesExclude(@NotNull String... names)
+    {
+        return propertyPredicateExclude(stream -> stream.map(this::like),
+            names);
+    }
+
+
+    /* Property Predicate */
 
     /**
      * Equal条件
@@ -160,24 +196,60 @@ public class JpaCondition<T>
      */
     private Predicate equal(boolean ignoreNull, PropertyDescriptor descriptor)
     {
+        return valuePredicate(ignoreNull, descriptor,
+            (name, value) -> builder.equal(root.get(name), value));
+    }
+
+    /**
+     * 包含该属性值
+     * @param descriptor
+     * @return
+     */
+    private Predicate like(PropertyDescriptor descriptor)
+    {
+        return valuePredicate(true, descriptor,
+            (name, value) -> builder.like(root.get(name), "%" + value + "%"));
+    }
+
+    /**
+     * 以属性值开头
+     * @param descriptor
+     * @return
+     */
+    public Predicate likeStart(PropertyDescriptor descriptor)
+    {
+        return valuePredicate(true, descriptor,
+            (name, value) -> builder.like(root.get(name), value + "%"));
+    }
+
+    /**
+     * 以属性值结尾
+     * @param descriptor
+     * @return
+     */
+    public Predicate likeEnd(PropertyDescriptor descriptor)
+    {
+        return valuePredicate(true, descriptor,
+            (name, value) -> builder.like(root.get(name), "%" + value));
+    }
+
+    /**
+     * 值条件断言
+     * @param ignoreNull 忽略空值
+     * @param descriptor 属性
+     * @param function BiFunction<属性名, 属性值, 条件断言>
+     * @param <T> 属性值类型
+     * @return 条件断言
+     */
+    private <T> Predicate valuePredicate(boolean ignoreNull,
+        PropertyDescriptor descriptor,
+        BiFunction<String, T, Predicate> function)
+    {
         String name = descriptor.getName();
-        //        Object value = descriptor.getValue(name);
-        //        if (ignoreNull && value == null)
-        //            return null;
-        //        return builder.equal(root.get(name), value);
-        Method reader = descriptor.getReadMethod();
-        try
-        {
-            Object value = reader.invoke(model);
-            if (ignoreNull && value == null)
-                return null;
-            return builder.equal(root.get(name), value);
-        }
-        catch (IllegalAccessException | InvocationTargetException e)
-        {
-            e.printStackTrace();
+        Object value = JpaConditionUtils.getPropertyValue(model, descriptor);
+        if (ignoreNull && value == null)
             return null;
-        }
+        return function.apply(name, (T)value);
     }
 
     /* Reader */
@@ -191,6 +263,7 @@ public class JpaCondition<T>
         return javaType;
     }
 
+    @Deprecated
     public PropertyDescriptor[] propertyDescriptors()
     {
         if (propertyDescriptors == null)
@@ -211,12 +284,15 @@ public class JpaCondition<T>
 
     public Stream<PropertyDescriptor> propertyStream()
     {
-        return Arrays.stream(propertyDescriptors());
+        //        return Arrays.stream(propertyDescriptors());
+        return attributeStream().map(
+            attribute -> BeanUtils.getPropertyDescriptor(javaType(),
+                attribute.getName()));
     }
 
     public Stream<Attribute<? super T, ?>> attributeStream()
     {
-        return attributes.stream();
+        return attributes().stream();
     }
 
     /* Getter And Setter */
