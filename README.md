@@ -72,17 +72,6 @@ public Predicate equalsExclude(@NotNull String... names)
 }
 
 /**
- * Equal条件, 排除所有names
- * @param names 属性名数组
- * @return Predicate
- */
-public Predicate equalsExclude(@NotNull String... names)
-{
-    return propertyPredicateExclude(stream -> stream.map(this::equal),
-        names);
-}
-
-/**
  * Like条件
  * @author TianGanLin
  * @version [1.0.0, 2017-08-28]
