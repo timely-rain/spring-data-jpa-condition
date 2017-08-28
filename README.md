@@ -15,7 +15,7 @@ Download the jar through Maven:
 
 ```xml
 <dependency>
-  <groupId>org.springframework.data.jpa.provider</groupId>
+  <groupId>org.springframework.data</groupId>
   <artifactId>spring-data-jpa-condition</artifactId>
   <version>1.0-SNAPSHOT</version>
 </dependency>
