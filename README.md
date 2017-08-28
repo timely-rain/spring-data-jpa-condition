@@ -3,6 +3,9 @@
 Spring Data JPA 动态查询工具类，用于快速生成动态查询的查询条件
 
 ## Features ##
+* 快速生成Predicate条件
+* 基于实体类的属性进行自动遍历
+* 支持自定义扩展
 
 ## Getting Help ##
 
@@ -37,7 +40,7 @@ yourRepository.findAll(((root, query, cb) -> {
   // 实例化JpaCondition
   JpaCondition<YourEntity> condition =
       JpaConditionUtils.instance(root, query, cb, yourEntity);
-  // 匹配所有属性
+  // 尝试匹配所有属性, 如果属性不为空, 则为其添加Equal条件(where name = :value)
   Predicate equals = condition.equals();
   // 返回条件断言
   return cb.and(equals);
