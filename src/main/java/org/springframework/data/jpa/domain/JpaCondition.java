@@ -26,7 +26,10 @@ public class JpaCondition<T>
 {
     /**
      * 反射时排除Object类自带的Get方法
+     * 现在使用EntityType.getAttributes，获取所有属性名
+     * @see javax.persistence.metamodel.EntityType
      */
+    @Deprecated
     public static final String OBJECT_CLASS = "class";
 
     private T model;
@@ -82,13 +85,22 @@ public class JpaCondition<T>
         return builder.and(predicates);
     }
 
+    /**
+     * 为所有属性生成条件断言
+     * @param predicate 条件Lambda
+     * @return 条件断言
+     */
     public Predicate propertyPredicate(
         Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate)
     {
-        Stream<Predicate> stream = predicate.apply(propertyStream());
-        return toPredicate(stream);
+        return propertyPredicate(propertyStream(),predicate);
     }
 
+    /**
+     * 为包含的属性生成条件断言
+     * @param predicate 条件Lambda
+     * @return 条件断言
+     */
     public Predicate propertyPredicateInclude(
         Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate,
         String... include)
@@ -97,6 +109,11 @@ public class JpaCondition<T>
             JpaConditionUtils.includePredicate(include)), predicate);
     }
 
+    /**
+     * 为过滤的属性生成条件断言
+     * @param predicate 条件Lambda
+     * @return 条件断言
+     */
     public Predicate propertyPredicateExclude(
         Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate,
         String... exclude)
@@ -234,7 +251,7 @@ public class JpaCondition<T>
     }
 
     /**
-     * 值条件断言
+     * 值条件断言, 对实体类每个属性的值尝试生成条件断言
      * @param ignoreNull 忽略空值
      * @param descriptor 属性
      * @param function BiFunction<属性名, 属性值, 条件断言>
@@ -282,6 +299,10 @@ public class JpaCondition<T>
         return attributes;
     }
 
+    /**
+     * 获得实体类的Managed属性流的spring-beans版
+     * @return Stream<PropertyDescriptor>
+     */
     public Stream<PropertyDescriptor> propertyStream()
     {
         //        return Arrays.stream(propertyDescriptors());
@@ -290,6 +311,10 @@ public class JpaCondition<T>
                 attribute.getName()));
     }
 
+    /**
+     * 获得实体类的Managed属性流
+     * @return Stream<Attribute>
+     */
     public Stream<Attribute<? super T, ?>> attributeStream()
     {
         return attributes().stream();
