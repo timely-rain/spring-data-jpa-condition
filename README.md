@@ -59,7 +59,7 @@ Specification specification =
             .and(jc.orInclude("desc", "code", "value"));
         // Also you can use Native API like this
         // 同时也支持 Spring Data JPA 原生API
-        // jc.and(cb.equal(root.get("id"), dict.getId()));
+        // jc.and(cb.equal(root.get("id"), yourEntity.getId()));
     });
 YourEntity one = yourRepository.findOne(specification);
 ```
