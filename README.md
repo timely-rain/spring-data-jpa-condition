@@ -74,7 +74,7 @@ Specification<YourEntity> specification = (root, query, cb) -> {
     Predicate value = cb.equal(root.get("value"), dict.getValue());
     // 5. (2 or 3 or 4)
     Predicate or = cb.or(desc, code, value);
-    // where 1 or 5
+    // where 1 and 5
     return cb.and(category, or);
 };
 YourEntity one = yourRepository.findOne(specification);
