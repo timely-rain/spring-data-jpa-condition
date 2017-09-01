@@ -37,6 +37,18 @@ public interface YourRepository<T, ID extends Serializable>
 
 Example
 ```java
+// Test Entity
+// 用于演示的实体类
+public class YourEntity
+{
+    private Long id;
+    private String category;
+    private String desc;
+    private String code;
+    private Integer value;
+}
+```
+```java
 // Use JPA Condition
 // 使用 JPA Condition，极简的代码，并保持良好的可读性
 Specification specification =
@@ -51,7 +63,7 @@ YourEntity one = yourRepository.findOne(specification);
 ```java
 // Use Spring Data JPA
 // 使用 Spring Data JPA，冗长的代码，无法保持良好的可读性
-Specification<Dictionary> specification = (root, query, cb) -> {
+Specification<YourEntity> specification = (root, query, cb) -> {
     // 1. category = :category
     Predicate category = cb.equal(root.get("category"), dict.getId());
     // 2. desc = :desc
