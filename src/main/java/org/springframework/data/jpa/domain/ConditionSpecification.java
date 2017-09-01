@@ -19,12 +19,12 @@ public interface ConditionSpecification<T> extends ParallelSpecificationSupport
      * Creates a WHERE clause for a query of the referenced entity in form of a {@link Predicate} for the given
      * {@link Root} and {@link CriteriaQuery}.
      *
-     * @param root       Root
-     * @param query      CriteriaQuery
-     * @param cb         CriteriaBuilder
-     * @param predicates List<Predicate>
+     * @param root  Root
+     * @param query CriteriaQuery
+     * @param cb    CriteriaBuilder
+     * @param jc   JpaCondition
      * @return a {@link Predicate}, must not be {@literal null}.
      */
-    void toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,
-        List<Predicate> predicates, JpaCondition<T> condition);
+    void apply(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,
+        JpaCondition<T> jc);
 }

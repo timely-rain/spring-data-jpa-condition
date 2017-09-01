@@ -27,6 +27,6 @@ public interface ParallelSpecification<T> extends ParallelSpecificationSupport
      * @param predicates List<Predicate>
      * @return a {@link Predicate}, must not be {@literal null}.
      */
-    void toPredicate(Root<T> root, CriteriaQuery<?> query,
+    void apply(Root<T> root, CriteriaQuery<?> query,
         CriteriaBuilder cb, List<Predicate> predicates);
 }

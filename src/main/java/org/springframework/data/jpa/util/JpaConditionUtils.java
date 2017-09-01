@@ -40,6 +40,32 @@ public class JpaConditionUtils
         return new JpaCondition<>(root, query, cb).setModel(model);
     }
 
+    /**
+     * 生成JPA查询明细
+     *
+     * @param model         实体类
+     * @param specification ConditionSpecification
+     * @param <T>           实体类类型
+     * @return Specification
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Specification specification(T model,
+        ConditionSpecification<T> specification)
+    {
+        return (root, query, cb) -> {
+            JpaCondition<T> condition =
+                JpaConditionUtils.instance(root, query, cb, model);
+            specification.apply(root, query, cb, condition);
+            return condition.toPredicate();
+        };
+    }
+
+    /**
+     * 生成JPA查询明细
+     * @param specification ParallelSpecification
+     * @param <T> 实体类类型
+     * @return Specification
+     */
     @SuppressWarnings("unchecked")
     public static <T> Specification specification(
         ParallelSpecification<T> specification)
@@ -47,37 +73,12 @@ public class JpaConditionUtils
         return (root, query, cb) -> {
             List<javax.persistence.criteria.Predicate> predicates =
                 new ArrayList<>();
-            specification.toPredicate(root, query, cb, predicates);
-            return specification.mergePredicate(cb, predicates);
-        };
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Specification specification(T model,
-        ConditionSpecification<T> specification)
-    {
-        return (root, query, cb) -> {
-            List<javax.persistence.criteria.Predicate> predicates =
-                new ArrayList<>();
-            JpaCondition<T> condition =
-                JpaConditionUtils.instance(root, query, cb, model);
-            specification.toPredicate(root, query, cb, predicates, condition);
+            specification.apply(root, query, cb, predicates);
             return specification.mergePredicate(cb, predicates);
         };
     }
 
     /* Property Filter */
-
-    //    /**
-    //     * 过滤器-非空
-    //     * @param stream Stream<PropertyDescriptor>
-    //     * @return Stream<PropertyDescriptor>
-    //     */
-    //    public static Stream<PropertyDescriptor> filterNotNull(
-    //        Stream<PropertyDescriptor> stream)
-    //    {
-    //        return stream.filter(JpaConditionUtils.notNullPredicate());
-    //    }
 
     /**
      * 断言-非空
