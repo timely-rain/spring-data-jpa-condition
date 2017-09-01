@@ -1,6 +1,9 @@
 package org.springframework.data.jpa.util;
 
+import org.springframework.data.jpa.domain.ConditionSpecification;
 import org.springframework.data.jpa.domain.JpaCondition;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.ParallelSpecification;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -8,24 +11,27 @@ import javax.persistence.criteria.Root;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
  * @author TianGanLin
  * @version [版本号, 2017/8/24]
- * @see  [相关类/方法]
+ * @see [相关类/方法]
  * @since [产品/模块版本]
  */
 public class JpaConditionUtils
 {
     /**
      * 实例化Jpa条件查询
+     *
      * @param root
      * @param query
      * @param cb
      * @param model 实体类
-     * @param <T> 实体类类型
+     * @param <T>   实体类类型
      * @return JpaCondition<T>
      */
     public static <T> JpaCondition<T> instance(Root<T> root,
@@ -34,21 +40,48 @@ public class JpaConditionUtils
         return new JpaCondition<>(root, query, cb).setModel(model);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> Specification specification(
+        ParallelSpecification<T> specification)
+    {
+        return (root, query, cb) -> {
+            List<javax.persistence.criteria.Predicate> predicates =
+                new ArrayList<>();
+            specification.toPredicate(root, query, cb, predicates);
+            return specification.mergePredicate(cb, predicates);
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Specification specification(T model,
+        ConditionSpecification<T> specification)
+    {
+        return (root, query, cb) -> {
+            List<javax.persistence.criteria.Predicate> predicates =
+                new ArrayList<>();
+            JpaCondition<T> condition =
+                JpaConditionUtils.instance(root, query, cb, model);
+            specification.toPredicate(root, query, cb, predicates, condition);
+            return specification.mergePredicate(cb, predicates);
+        };
+    }
+
     /* Property Filter */
 
-//    /**
-//     * 过滤器-非空
-//     * @param stream Stream<PropertyDescriptor>
-//     * @return Stream<PropertyDescriptor>
-//     */
-//    public static Stream<PropertyDescriptor> filterNotNull(
-//        Stream<PropertyDescriptor> stream)
-//    {
-//        return stream.filter(JpaConditionUtils.notNullPredicate());
-//    }
+    //    /**
+    //     * 过滤器-非空
+    //     * @param stream Stream<PropertyDescriptor>
+    //     * @return Stream<PropertyDescriptor>
+    //     */
+    //    public static Stream<PropertyDescriptor> filterNotNull(
+    //        Stream<PropertyDescriptor> stream)
+    //    {
+    //        return stream.filter(JpaConditionUtils.notNullPredicate());
+    //    }
 
     /**
      * 断言-非空
+     *
      * @return Predicate<PropertyDescriptor>
      */
     public static <T> Predicate<T> notNullPredicate()
@@ -58,6 +91,7 @@ public class JpaConditionUtils
 
     /**
      * 断言-包含
+     *
      * @return Predicate<PropertyDescriptor>
      */
     public static Predicate<PropertyDescriptor> includePredicate(
@@ -73,6 +107,7 @@ public class JpaConditionUtils
 
     /**
      * 断言-排除
+     *
      * @return Predicate<PropertyDescriptor>
      */
     public static Predicate<PropertyDescriptor> excludePredicate(
@@ -99,9 +134,10 @@ public class JpaConditionUtils
 
     /**
      * 判断属性是否瞬态
+     *
      * @param root 实体类映射
      * @param name 属性名
-     * @param <T> 实体类类型
+     * @param <T>  实体类类型
      * @return 是否瞬态
      */
     public static <T> boolean isTransient(Root<T> root, String name)

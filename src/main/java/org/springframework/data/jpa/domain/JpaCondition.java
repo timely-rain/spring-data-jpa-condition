@@ -10,16 +10,19 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.Attribute;
 import java.beans.PropertyDescriptor;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
  * Jpa条件查询
+ *
  * @author TianGanLin
  * @version [1.0.0, 2017/8/25]
- * @see  [相关类/方法]
+ * @see [相关类/方法]
  * @since [产品/模块版本]
  */
 public class JpaCondition<T>
@@ -27,6 +30,7 @@ public class JpaCondition<T>
     /**
      * 反射时排除Object类自带的Get方法
      * 现在使用EntityType.getAttributes，获取所有属性名
+     *
      * @see javax.persistence.metamodel.EntityType
      */
     @Deprecated
@@ -62,7 +66,8 @@ public class JpaCondition<T>
 
     /**
      * 创建属性条件
-     * @param stream 属性流
+     *
+     * @param stream    属性流
      * @param predicate 创建条件
      * @return 条件
      */
@@ -75,6 +80,7 @@ public class JpaCondition<T>
 
     /**
      * 生成条件断言
+     *
      * @param predicate 条件断言流
      * @return 条件断言
      */
@@ -87,17 +93,19 @@ public class JpaCondition<T>
 
     /**
      * 为所有属性生成条件断言
+     *
      * @param predicate 条件Lambda
      * @return 条件断言
      */
     public Predicate propertyPredicate(
         Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate)
     {
-        return propertyPredicate(propertyStream(),predicate);
+        return propertyPredicate(propertyStream(), predicate);
     }
 
     /**
      * 为包含的属性生成条件断言
+     *
      * @param predicate 条件Lambda
      * @return 条件断言
      */
@@ -111,6 +119,7 @@ public class JpaCondition<T>
 
     /**
      * 为过滤的属性生成条件断言
+     *
      * @param predicate 条件Lambda
      * @return 条件断言
      */
@@ -126,6 +135,7 @@ public class JpaCondition<T>
 
     /**
      * Equal条件
+     *
      * @return List<Predicate>
      * @author TianGanLin
      * @version [版本号, 2017/8/25]
@@ -137,6 +147,7 @@ public class JpaCondition<T>
 
     /**
      * Equal条件, 包含所有names
+     *
      * @param names 属性名数组
      * @return Predicate
      */
@@ -148,6 +159,7 @@ public class JpaCondition<T>
 
     /**
      * Equal条件, 排除所有names
+     *
      * @param names 属性名数组
      * @return Predicate
      */
@@ -159,9 +171,10 @@ public class JpaCondition<T>
 
     /**
      * Like条件
+     *
+     * @return Predicate
      * @author TianGanLin
      * @version [1.0.0, 2017-08-28]
-     * @return Predicate
      */
     public Predicate likes()
     {
@@ -170,9 +183,10 @@ public class JpaCondition<T>
 
     /**
      * Like条件, 包含所有names
+     *
+     * @return Predicate
      * @author TianGanLin
      * @version [1.0.0, 2017-08-28]
-     * @return Predicate
      */
     public Predicate likesInclude(@NotNull String... names)
     {
@@ -182,9 +196,10 @@ public class JpaCondition<T>
 
     /**
      * Like条件, 排除所有names
+     *
+     * @return Predicate
      * @author TianGanLin
      * @version [1.0.0, 2017-08-28]
-     * @return Predicate
      */
     public Predicate likesExclude(@NotNull String... names)
     {
@@ -192,11 +207,38 @@ public class JpaCondition<T>
             names);
     }
 
+    /**
+     * Equal条件, 包含所有names
+     *
+     * @param names 属性名数组
+     * @return Predicate
+     */
+    public Predicate orInclude(@NotNull String... names)
+    {
+        Optional<Predicate> optional =
+            propertyStream().filter(JpaConditionUtils.includePredicate(names))
+                .map(this::equal)
+                .reduce((a, b) -> builder.or(a, b));
+        return optional.get();
+    }
+
 
     /* Property Predicate */
 
     /**
      * Equal条件
+     *
+     * @param name 属性名
+     * @return Predicate
+     */
+    public Predicate equal(String name)
+    {
+        return equal(true, propertyDescriptor(name));
+    }
+
+    /**
+     * Equal条件
+     *
      * @param descriptor 属性反射
      * @return Predicate
      */
@@ -207,6 +249,7 @@ public class JpaCondition<T>
 
     /**
      * Equal条件
+     *
      * @param ignoreNull 忽略空值
      * @param descriptor 属性反射
      * @return Predicate
@@ -219,6 +262,7 @@ public class JpaCondition<T>
 
     /**
      * 包含该属性值
+     *
      * @param descriptor
      * @return
      */
@@ -230,6 +274,7 @@ public class JpaCondition<T>
 
     /**
      * 以属性值开头
+     *
      * @param descriptor
      * @return
      */
@@ -241,6 +286,7 @@ public class JpaCondition<T>
 
     /**
      * 以属性值结尾
+     *
      * @param descriptor
      * @return
      */
@@ -252,10 +298,11 @@ public class JpaCondition<T>
 
     /**
      * 值条件断言, 对实体类每个属性的值尝试生成条件断言
+     *
      * @param ignoreNull 忽略空值
      * @param descriptor 属性
-     * @param function BiFunction<属性名, 属性值, 条件断言>
-     * @param <T> 属性值类型
+     * @param function   BiFunction<属性名, 属性值, 条件断言>
+     * @param <T>        属性值类型
      * @return 条件断言
      */
     private <T> Predicate valuePredicate(boolean ignoreNull,
@@ -290,6 +337,30 @@ public class JpaCondition<T>
         return propertyDescriptors;
     }
 
+    /**
+     * 获得一个实体类属性 spring-bean
+     *
+     * @param name 属性名
+     * @return 实体类属性 spring-bean
+     */
+    private PropertyDescriptor propertyDescriptor(String name)
+    {
+        Attribute<? super T, ?> attribute = root.getModel().getAttribute(name);
+        return propertyDescriptor(attribute);
+    }
+
+    /**
+     * 获得一个实体类属性 spring-bean
+     *
+     * @param attribute 实体类属性 JPA
+     * @return 实体类属性 spring-bean
+     */
+    private PropertyDescriptor propertyDescriptor(
+        Attribute<? super T, ?> attribute)
+    {
+        return BeanUtils.getPropertyDescriptor(javaType(), attribute.getName());
+    }
+
     public Set<Attribute<? super T, ?>> attributes()
     {
         if (attributes == null)
@@ -301,18 +372,17 @@ public class JpaCondition<T>
 
     /**
      * 获得实体类的Managed属性流的spring-beans版
+     *
      * @return Stream<PropertyDescriptor>
      */
     public Stream<PropertyDescriptor> propertyStream()
     {
-        //        return Arrays.stream(propertyDescriptors());
-        return attributeStream().map(
-            attribute -> BeanUtils.getPropertyDescriptor(javaType(),
-                attribute.getName()));
+        return attributeStream().map(this::propertyDescriptor);
     }
 
     /**
      * 获得实体类的Managed属性流
+     *
      * @return Stream<Attribute>
      */
     public Stream<Attribute<? super T, ?>> attributeStream()
