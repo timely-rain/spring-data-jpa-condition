@@ -65,13 +65,13 @@ YourEntity one = yourRepository.findOne(specification);
 // 使用 Spring Data JPA，冗长的代码，无法保持良好的可读性
 Specification<YourEntity> specification = (root, query, cb) -> {
     // 1. category = :category
-    Predicate category = cb.equal(root.get("category"), dict.getId());
+    Predicate category = cb.equal(root.get("category"), yourEntity.getId());
     // 2. desc = :desc
-    Predicate desc = cb.equal(root.get("desc"), dict.getDesc());
+    Predicate desc = cb.equal(root.get("desc"), yourEntity.getDesc());
     // 3. code = :code
-    Predicate code = cb.equal(root.get("code"), dict.getCode());
+    Predicate code = cb.equal(root.get("code"), yourEntity.getCode());
     // 4. value = :value
-    Predicate value = cb.equal(root.get("value"), dict.getValue());
+    Predicate value = cb.equal(root.get("value"), yourEntity.getValue());
     // 5. (2 or 3 or 4)
     Predicate or = cb.or(desc, code, value);
     // where 1 and 5
