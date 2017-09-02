@@ -4,7 +4,8 @@ Spring Data JPA 动态查询工具类，用于快速生成动态查询的查询�
 
 ## Features ##
 * 快速生成Predicate条件
-* 基于实体类的属性进行自动遍历
+* 极简代码，良好可读性
+* 基于实体类的属性进行自动遍历，自动处理空属性
 * 支持自定义扩展
 
 ## Getting Help ##
@@ -23,7 +24,7 @@ Download the jar through Maven:
 
 相关API
 ```java
-JpaSpecificationExecutor.findAll(Specification<T> spec);
+JpaSpecificationExecutor.findOne(Specification<T> spec);
 
 Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb);
 ```
@@ -36,15 +37,50 @@ public interface YourRepository<T, ID extends Serializable>
 
 Example
 ```java
-yourRepository.findAll(((root, query, cb) -> {
-  // 实例化JpaCondition
-  JpaCondition<YourEntity> condition =
-      JpaConditionUtils.instance(root, query, cb, yourEntity);
-  // 尝试匹配所有属性, 如果属性不为空, 则为其添加Equal条件(where name = :value)
-  Predicate equals = condition.equals();
-  // 返回条件断言
-  return cb.and(equals);
-}));
+// Test Entity
+// 用于演示的实体类
+public class YourEntity
+{
+    private Long id;
+    private String category;
+    private String desc;
+    private String code;
+    private Integer value;
+}
+```
+```java
+// Use JPA Condition
+// 使用 JPA Condition，极简的代码，并保持良好的可读性
+Specification specification =
+    JpaConditionUtils.specification(yourEntity, (root, query, cb, jc) -> {
+        // where category = :category
+        jc.and(jc.equal("category"))
+            // and desc = :desc or code = :code or value = :value
+            .and(jc.orInclude("desc", "code", "value"));
+        // Also you can use Native API like this
+        // 同时也支持 Spring Data JPA 原生API
+        // jc.and(cb.equal(root.get("id"), yourEntity.getId()));
+    });
+YourEntity one = yourRepository.findOne(specification);
+```
+```java
+// Use Spring Data JPA
+// 使用 Spring Data JPA，冗长的代码，无法保持良好的可读性
+Specification<YourEntity> specification = (root, query, cb) -> {
+    // 1. category = :category
+    Predicate category = cb.equal(root.get("category"), yourEntity.getId());
+    // 2. desc = :desc
+    Predicate desc = cb.equal(root.get("desc"), yourEntity.getDesc());
+    // 3. code = :code
+    Predicate code = cb.equal(root.get("code"), yourEntity.getCode());
+    // 4. value = :value
+    Predicate value = cb.equal(root.get("value"), yourEntity.getValue());
+    // 5. (2 or 3 or 4)
+    Predicate or = cb.or(desc, code, value);
+    // where 1 and 5
+    return cb.and(category, or);
+};
+YourEntity one = yourRepository.findOne(specification);
 ```
 
 JpaCondition API
@@ -54,22 +90,14 @@ JpaCondition API
  * @param names 属性名数组
  * @return Predicate
  */
-public Predicate equalsInclude(@NotNull String... names)
-{
-    return propertyPredicateInclude(stream -> stream.map(this::equal),
-        names);
-}
+public Predicate equalsInclude(@NotNull String... names);
 
 /**
  * Equal条件, 排除所有names
  * @param names 属性名数组
  * @return Predicate
  */
-public Predicate equalsExclude(@NotNull String... names)
-{
-    return propertyPredicateExclude(stream -> stream.map(this::equal),
-        names);
-}
+public Predicate equalsExclude(@NotNull String... names);
 
 /**
  * Like条件
@@ -78,9 +106,6 @@ public Predicate equalsExclude(@NotNull String... names)
  * @return Predicate
  */
 public Predicate likes()
-{
-    return propertyPredicate(stream -> stream.map(this::like));
-}
 
 /**
  * Like条件, 包含所有names
@@ -88,11 +113,7 @@ public Predicate likes()
  * @version [1.0.0, 2017-08-28]
  * @return Predicate
  */
-public Predicate likesInclude(@NotNull String... names)
-{
-    return propertyPredicateInclude(stream -> stream.map(this::like),
-        names);
-}
+public Predicate likesInclude(@NotNull String... names);
 
 /**
  * Like条件, 排除所有names
@@ -100,11 +121,15 @@ public Predicate likesInclude(@NotNull String... names)
  * @version [1.0.0, 2017-08-28]
  * @return Predicate
  */
-public Predicate likesExclude(@NotNull String... names)
-{
-    return propertyPredicateExclude(stream -> stream.map(this::like),
-        names);
-}
+public Predicate likesExclude(@NotNull String... names);
+
+/**
+ * Or条件, 包含names
+ *
+ * @param names 属性名数组
+ * @return Predicate
+ */
+public Predicate orInclude(@NotNull String... names);
 ```
 
 核心(用于自定义扩展)
