@@ -1,4 +1,4 @@
-package org.springframework.data.jpa.domain;
+package org.springframework.data.jpa.condition;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -25,7 +25,6 @@ public interface ParallelSpecification<T> extends ParallelSpecificationSupport
      * @param query      CriteriaQuery
      * @param cb         CriteriaBuilder
      * @param predicates List<Predicate>
-     * @return a {@link Predicate}, must not be {@literal null}.
      */
     void apply(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,
         List<Predicate> predicates);

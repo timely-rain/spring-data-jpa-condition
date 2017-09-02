@@ -1,8 +1,7 @@
-package org.springframework.data.jpa.domain;
+package org.springframework.data.jpa.condition;
 
 import com.sun.istack.internal.NotNull;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.jpa.util.JpaConditionUtils;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -240,8 +239,7 @@ public class JpaCondition<T>
      * Equal条件
      *
      * @return List<Predicate>
-     * @author TianGanLin
-     * @version [版本号, 2017/8/25]
+     * @apiNote range:Entity.attributes
      */
     public Predicate[] equals()
     {
@@ -249,10 +247,11 @@ public class JpaCondition<T>
     }
 
     /**
-     * Equal条件, 包含所有names
+     * Equal条件
      *
      * @param names 属性名数组
      * @return Predicate
+     * @apiNote range:Entity.attributes in names
      */
     public Predicate[] equalsInclude(@NotNull String... names)
     {
@@ -260,10 +259,11 @@ public class JpaCondition<T>
     }
 
     /**
-     * Equal条件, 排除所有names
+     * Equal条件
      *
      * @param names 属性名数组
      * @return Predicate
+     * @apiNote range:Entity.attributes not in names
      */
     public Predicate[] equalsExclude(@NotNull String... names)
     {
@@ -274,8 +274,6 @@ public class JpaCondition<T>
      * Like条件
      *
      * @return Predicate
-     * @author TianGanLin
-     * @version [1.0.0, 2017-08-28]
      */
     public Predicate[] likes()
     {
@@ -286,8 +284,6 @@ public class JpaCondition<T>
      * Like条件, 包含所有names
      *
      * @return Predicate
-     * @author TianGanLin
-     * @version [1.0.0, 2017-08-28]
      */
     public Predicate[] likesInclude(@NotNull String... names)
     {
@@ -298,8 +294,6 @@ public class JpaCondition<T>
      * Like条件, 排除所有names
      *
      * @return Predicate
-     * @author TianGanLin
-     * @version [1.0.0, 2017-08-28]
      */
     public Predicate[] likesExclude(@NotNull String... names)
     {
@@ -307,18 +301,16 @@ public class JpaCondition<T>
     }
 
     /**
-     * OrEqual条件, 包含names
+     * OrEqual条件
      *
      * @param names 属性名数组
      * @return Predicate
+     * @apiNote Entity.attributes in names
+     * @apiNote builder.or(equalsInclude(names))
      */
     public Predicate orEqualInclude(@NotNull String... names)
     {
-        Predicate[] predicates =
-            propertyStream().filter(JpaConditionUtils.includePredicate(names))
-                .map(this::equal)
-                .filter(Objects::nonNull)
-                .toArray(Predicate[]::new);
+        Predicate[] predicates = equalsInclude(names);
         return builder.or(predicates);
     }
 

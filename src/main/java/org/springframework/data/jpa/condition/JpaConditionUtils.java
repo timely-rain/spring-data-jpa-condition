@@ -1,8 +1,5 @@
-package org.springframework.data.jpa.util;
+package org.springframework.data.jpa.condition;
 
-import org.springframework.data.jpa.domain.ConditionSpecification;
-import org.springframework.data.jpa.domain.JpaCondition;
-import org.springframework.data.jpa.domain.ParallelSpecification;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.CriteriaBuilder;
