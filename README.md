@@ -47,8 +47,8 @@ public class YourEntity
     private Integer value;
 }
 ```
+Use JPA Condition
 ```java
-// Use JPA Condition
 // 使用 JPA Condition，极简的代码，并保持良好的可读性
 Specification specification =
     JpaConditionUtils.specification(yourEntity, (root, query, cb, jc) -> {
@@ -63,8 +63,8 @@ YourEntity one = yourRepository.findOne(specification);
 // 同时也支持 Spring Data JPA 原生API
 // jc.clauseAnd(cb.equal(root.get("id"), yourEntity.getId()));
 ```
+Use Spring Data JPA
 ```java
-// Use Spring Data JPA
 // 使用 Spring Data JPA，冗长的代码，无法保持良好的可读性
 Specification<YourEntity> specification = (root, query, cb) -> {
     // 1. category = :category
