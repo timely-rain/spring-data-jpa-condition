@@ -2,8 +2,8 @@ package org.springframework.data.jpa.util;
 
 import org.springframework.data.jpa.domain.ConditionSpecification;
 import org.springframework.data.jpa.domain.JpaCondition;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.domain.ParallelSpecification;
+import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -12,11 +12,14 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
+ * 极简JPA动态查询工具类
+ *
  * @author TianGanLin
  * @version [版本号, 2017/8/24]
  * @see [相关类/方法]
@@ -34,7 +37,7 @@ public class JpaConditionUtils
      * @param <T>   实体类类型
      * @return JpaCondition<T>
      */
-    public static <T> JpaCondition<T> instance(Root<T> root,
+    public static <T> JpaCondition<T> condition(Root<T> root,
         CriteriaQuery<?> query, CriteriaBuilder cb, T model)
     {
         return new JpaCondition<>(root, query, cb).setModel(model);
@@ -54,7 +57,7 @@ public class JpaConditionUtils
     {
         return (root, query, cb) -> {
             JpaCondition<T> condition =
-                JpaConditionUtils.instance(root, query, cb, model);
+                JpaConditionUtils.condition(root, query, cb, model);
             specification.apply(root, query, cb, condition);
             return condition.toPredicate();
         };
@@ -62,8 +65,9 @@ public class JpaConditionUtils
 
     /**
      * 生成JPA查询明细
+     *
      * @param specification ParallelSpecification
-     * @param <T> 实体类类型
+     * @param <T>           实体类类型
      * @return Specification
      */
     @SuppressWarnings("unchecked")
@@ -81,16 +85,6 @@ public class JpaConditionUtils
     /* Property Filter */
 
     /**
-     * 断言-非空
-     *
-     * @return Predicate<PropertyDescriptor>
-     */
-    public static <T> Predicate<T> notNullPredicate()
-    {
-        return t -> t != null;
-    }
-
-    /**
      * 断言-包含
      *
      * @return Predicate<PropertyDescriptor>
@@ -98,12 +92,8 @@ public class JpaConditionUtils
     public static Predicate<PropertyDescriptor> includePredicate(
         String... includes)
     {
-        return descriptor -> {
-            Arrays.sort(includes);
-            String name = descriptor.getName();
-            int i = Arrays.binarySearch(includes, name);
-            return i >= 0;
-        };
+        return descriptor -> Stream.of(includes)
+            .anyMatch(s -> Objects.equals(s, descriptor.getName()));
     }
 
     /**
@@ -114,10 +104,17 @@ public class JpaConditionUtils
     public static Predicate<PropertyDescriptor> excludePredicate(
         String... excludes)
     {
-        return descriptor -> Arrays.binarySearch(excludes, descriptor.getName())
-            < 0;
+        return descriptor -> !Stream.of(excludes)
+            .anyMatch(s -> Objects.equals(s, descriptor.getName()));
     }
 
+    /**
+     * 获取实体类的属性值
+     * @param model 实体类
+     * @param descriptor spring-beans属性
+     * @param <T> 实体类类型
+     * @return 属性值
+     */
     public static <T> Object getPropertyValue(T model,
         PropertyDescriptor descriptor)
     {
