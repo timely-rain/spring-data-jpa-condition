@@ -4,10 +4,10 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.Collection;
 import java.util.List;
 
 /**
+ * 平行式 Spring Data JPA 查询规格
  *
  * @author TianGanLin
  * @version [版本号, 2017/9/1]
@@ -27,6 +27,6 @@ public interface ParallelSpecification<T> extends ParallelSpecificationSupport
      * @param predicates List<Predicate>
      * @return a {@link Predicate}, must not be {@literal null}.
      */
-    void apply(Root<T> root, CriteriaQuery<?> query,
-        CriteriaBuilder cb, List<Predicate> predicates);
+    void apply(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,
+        List<Predicate> predicates);
 }
