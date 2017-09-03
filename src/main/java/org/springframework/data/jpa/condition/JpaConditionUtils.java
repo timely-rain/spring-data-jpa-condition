@@ -48,8 +48,7 @@ public class JpaConditionUtils
      * @param <T>           实体类类型
      * @return Specification
      */
-    @SuppressWarnings("unchecked")
-    public static <T> Specification specification(T model,
+    public static <T> Specification<T> specification(T model,
         ConditionSpecification<T> specification)
     {
         return (root, query, cb) -> {
@@ -67,8 +66,7 @@ public class JpaConditionUtils
      * @param <T>           实体类类型
      * @return Specification
      */
-    @SuppressWarnings("unchecked")
-    public static <T> Specification specification(
+    public static <T> Specification<T> specification(
         ParallelSpecification<T> specification)
     {
         return (root, query, cb) -> {
