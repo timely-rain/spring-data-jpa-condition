@@ -190,49 +190,6 @@ public class JpaCondition<T>
         return builder.and(predicates); // 默认and
     }
 
-    /**
-     * 为所有属性生成条件断言
-     *
-     * @param predicate 条件Lambda
-     * @return 条件断言
-     */
-    @Deprecated
-    protected Predicate propertyPredicate(
-        Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate)
-    {
-        return propertyPredicate(propertyStream(), predicate);
-    }
-
-    /**
-     * 为包含的属性生成条件断言
-     *
-     * @param predicate 条件Lambda
-     * @return 条件断言
-     */
-    @Deprecated
-    protected Predicate propertyPredicateInclude(
-        Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate,
-        String... include)
-    {
-        return propertyPredicate(propertyStream().filter(
-            JpaConditionUtils.includePredicate(include)), predicate);
-    }
-
-    /**
-     * 为过滤的属性生成条件断言
-     *
-     * @param predicate 条件Lambda
-     * @return 条件断言
-     */
-    @Deprecated
-    protected Predicate propertyPredicateExclude(
-        Function<Stream<PropertyDescriptor>, Stream<Predicate>> predicate,
-        String... exclude)
-    {
-        return propertyPredicate(propertyStream().filter(
-            JpaConditionUtils.excludePredicate(exclude)), predicate);
-    }
-
     /* Properties Predicate */
 
     /**
@@ -394,18 +351,17 @@ public class JpaCondition<T>
      * @param ignoreNull 忽略空值
      * @param descriptor 属性
      * @param function   BiFunction<属性名, 属性值, 条件断言>
-     * @param <V>        属性值类型
      * @return 条件断言
      */
-    protected <V> Predicate valuePredicate(boolean ignoreNull,
+    protected Predicate valuePredicate(boolean ignoreNull,
         PropertyDescriptor descriptor,
-        BiFunction<String, V, Predicate> function)
+        BiFunction<String, Object, Predicate> function)
     {
         String name = descriptor.getName();
         Object value = JpaConditionUtils.getPropertyValue(model, descriptor);
         if (ignoreNull && value == null)
             return null;
-        return function.apply(name, (V)value);
+        return function.apply(name, value);
     }
 
     /* Reader */

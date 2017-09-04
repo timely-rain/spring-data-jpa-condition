@@ -27,9 +27,9 @@ public class JpaConditionUtils
     /**
      * 实例化Jpa条件查询
      *
-     * @param root
-     * @param query
-     * @param cb
+     * @param root       Root
+     * @param query      CriteriaQuery
+     * @param cb         CriteriaBuilder
      * @param model 实体类
      * @param <T>   实体类类型
      * @return JpaCondition<T>
@@ -45,14 +45,14 @@ public class JpaConditionUtils
      *
      * @param model         实体类
      * @param specification ConditionSpecification
-     * @param <T>           实体类类型
+     * @param <S>           实体类类型
      * @return Specification
      */
-    public static <T> Specification<T> specification(T model,
-        ConditionSpecification<T> specification)
+    public static <S> Specification<S> specification(S model,
+        ConditionSpecification<S> specification)
     {
         return (root, query, cb) -> {
-            JpaCondition<T> condition =
+            JpaCondition<S> condition =
                 JpaConditionUtils.condition(root, query, cb, model);
             specification.apply(root, query, cb, condition);
             return condition.toPredicate();
