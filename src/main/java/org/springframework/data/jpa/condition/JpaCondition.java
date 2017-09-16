@@ -1,6 +1,5 @@
 package org.springframework.data.jpa.condition;
 
-import com.sun.istack.internal.NotNull;
 import org.springframework.beans.BeanUtils;
 
 import javax.persistence.criteria.*;
@@ -173,7 +172,7 @@ public class JpaCondition<T> {
      * @return Predicate
      * @apiNote range:Entity.attributes in names
      */
-    public Predicate[] equalsInclude(@NotNull String... names) {
+    public Predicate[] equalsInclude(String... names) {
         return streamToArray(propertyStreamInclude(names).map(this::equal));
     }
 
@@ -184,7 +183,7 @@ public class JpaCondition<T> {
      * @return Predicate
      * @apiNote range:Entity.attributes not in names
      */
-    public Predicate[] equalsExclude(@NotNull String... names) {
+    public Predicate[] equalsExclude(String... names) {
         return streamToArray(propertyStreamExclude(names).map(this::equal));
     }
 
@@ -202,7 +201,7 @@ public class JpaCondition<T> {
      *
      * @return Predicate
      */
-    public Predicate[] likesInclude(@NotNull String... names) {
+    public Predicate[] likesInclude(String... names) {
         return streamToArray(propertyStreamInclude(names).map(this::like));
     }
 
@@ -211,7 +210,7 @@ public class JpaCondition<T> {
      *
      * @return Predicate
      */
-    public Predicate[] likesExclude(@NotNull String... names) {
+    public Predicate[] likesExclude(String... names) {
         return streamToArray(propertyStreamExclude(names).map(this::like));
     }
 
@@ -223,7 +222,7 @@ public class JpaCondition<T> {
      * @apiNote Entity.attributes in names
      * @apiNote builder.or(equalsInclude(names))
      */
-    public Predicate orEqualInclude(@NotNull String... names) {
+    public Predicate orEqualInclude(String... names) {
         Predicate[] predicates = equalsInclude(names);
         return builder.or(predicates);
     }
