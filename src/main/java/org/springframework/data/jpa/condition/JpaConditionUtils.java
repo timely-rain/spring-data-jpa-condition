@@ -41,17 +41,17 @@ public class JpaConditionUtils {
     /**
      * 生成JPA查询明细
      *
-     * @param model         实体类
-     * @param specification ConditionSpecification
-     * @param <S>           实体类类型
+     * @param model          实体类
+     * @param specifications ConditionSpecification
+     * @param <S>            实体类类型
      * @return Specification
      */
     public static <S> Specification<S> specification(
-            S model, ConditionSpecification<S> specification) {
+            S model, ConditionSpecification<S>... specifications) {
         return (root, query, cb) -> {
-            JpaCondition<S> condition =
-                    JpaConditionUtils.condition(root, query, cb, model);
-            specification.apply(root, query, cb, condition);
+            JpaCondition<S> condition = JpaConditionUtils.condition(root, query, cb, model);
+            for (ConditionSpecification<S> specification : specifications)
+                specification.apply(root, query, cb, condition);
             return condition.toPredicate();
         };
     }
