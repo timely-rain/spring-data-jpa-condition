@@ -45,6 +45,13 @@ public class YourEntity
     private String desc;
     private String code;
     private Integer value;
+    private Date date;
+    
+    // Use To Between
+    @Transient
+    private Date dateStart;
+    @Transient
+    private Date dateEnd;
 }
 ```
 Use JPA Condition
@@ -61,7 +68,9 @@ YourEntity one = yourRepository.findOne(specification);
 
 // Also you can use Native API like this
 // 同时也支持 Spring Data JPA 原生API
-// jc.clauseAnd(cb.equal(root.get("id"), yourEntity.getId()));
+jc.clauseAnd(cb.equal(root.get("id"), yourEntity.getId()));
+// Example Between
+jc.clauseAnd(jc.between("date"));
 ```
 Use Spring Data JPA
 ```java
@@ -122,11 +131,48 @@ public Predicate[] equalsInclude(@NotNull String... names);
  */
 public Predicate[] equalsExclude(@NotNull String... names);
 
+/**
+ * Like条件
+ *
+ * @return Predicate
+ */
 public Predicate[] likes();
 
 public Predicate[] likesInclude(@NotNull String... names);
 
 public Predicate[] likesExclude(@NotNull String... names);
+
+/**
+ * Between条件
+ *
+ * @param name 属性名, Entity中必须有[name+"Start"]和[name+"End"]属性
+ * @return Predicate
+ * @apiNote startValue <= root.get(name) < endValue
+ */
+public <T extends Comparable<? super T>> Predicate between(String name);
+
+/**
+ * Between条件
+ *
+ * @param ignoreNull 忽略空值
+ * @param name       属性名, Entity中必须有[name+"Start"]和[name+"End"]属性
+ * @return Predicate
+ * @apiNote startValue <= root.get(name) < endValue
+ */
+public <T extends Comparable<? super T>> Predicate between(boolean ignoreNull, String name);
+
+/**
+ * Between条件
+ *
+ * @param ignoreNull 忽略空值
+ * @param name       属性名
+ * @param startValue 起始值
+ * @param endValue   结束值
+ * @param <T>        值类型
+ * @return Predicate
+ * @apiNote startValue <= root.get(name) < endValue
+ */
+public <T extends Comparable<? super T>> Predicate between(boolean ignoreNull, String name, T startValue, T endValue);
 
 /**
  * OrEqual条件
