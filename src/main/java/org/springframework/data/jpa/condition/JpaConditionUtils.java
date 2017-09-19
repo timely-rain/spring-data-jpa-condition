@@ -22,21 +22,19 @@ import java.util.stream.Stream;
  * @see [相关类/方法]
  * @since [产品/模块版本]
  */
-public class JpaConditionUtils
-{
+public class JpaConditionUtils {
     /**
      * 实例化Jpa条件查询
      *
-     * @param root
-     * @param query
-     * @param cb
+     * @param root  Root
+     * @param query CriteriaQuery
+     * @param cb    CriteriaBuilder
      * @param model 实体类
      * @param <T>   实体类类型
      * @return JpaCondition<T>
      */
-    public static <T> JpaCondition<T> condition(Root<T> root,
-        CriteriaQuery<?> query, CriteriaBuilder cb, T model)
-    {
+    public static <T> JpaCondition<T> condition(
+            Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb, T model) {
         return new JpaCondition<>(root, query, cb).setModel(model);
     }
 
@@ -45,15 +43,14 @@ public class JpaConditionUtils
      *
      * @param model         实体类
      * @param specification ConditionSpecification
-     * @param <T>           实体类类型
+     * @param <S>           实体类类型
      * @return Specification
      */
-    public static <T> Specification<T> specification(T model,
-        ConditionSpecification<T> specification)
-    {
+    public static <S> Specification<S> specification(
+            S model, ConditionSpecification<S> specification) {
         return (root, query, cb) -> {
-            JpaCondition<T> condition =
-                JpaConditionUtils.condition(root, query, cb, model);
+            JpaCondition<S> condition =
+                    JpaConditionUtils.condition(root, query, cb, model);
             specification.apply(root, query, cb, condition);
             return condition.toPredicate();
         };
@@ -67,11 +64,10 @@ public class JpaConditionUtils
      * @return Specification
      */
     public static <T> Specification<T> specification(
-        ParallelSpecification<T> specification)
-    {
+            ParallelSpecification<T> specification) {
         return (root, query, cb) -> {
             List<javax.persistence.criteria.Predicate> predicates =
-                new ArrayList<>();
+                    new ArrayList<>();
             specification.apply(root, query, cb, predicates);
             return specification.mergePredicate(cb, predicates);
         };
@@ -85,10 +81,9 @@ public class JpaConditionUtils
      * @return Predicate<PropertyDescriptor>
      */
     public static Predicate<PropertyDescriptor> includePredicate(
-        String... includes)
-    {
+            String... includes) {
         return descriptor -> Stream.of(includes)
-            .anyMatch(s -> Objects.equals(s, descriptor.getName()));
+                .anyMatch(s -> Objects.equals(s, descriptor.getName()));
     }
 
     /**
@@ -97,29 +92,25 @@ public class JpaConditionUtils
      * @return Predicate<PropertyDescriptor>
      */
     public static Predicate<PropertyDescriptor> excludePredicate(
-        String... excludes)
-    {
+            String... excludes) {
         return descriptor -> !Stream.of(excludes)
-            .anyMatch(s -> Objects.equals(s, descriptor.getName()));
+                .anyMatch(s -> Objects.equals(s, descriptor.getName()));
     }
 
     /**
      * 获取实体类的属性值
-     * @param model 实体类
+     *
+     * @param model      实体类
      * @param descriptor spring-beans属性
-     * @param <T> 实体类类型
+     * @param <T>        实体类类型
      * @return 属性值
      */
     public static <T> Object getPropertyValue(T model,
-        PropertyDescriptor descriptor)
-    {
+                                              PropertyDescriptor descriptor) {
         Method reader = descriptor.getReadMethod();
-        try
-        {
+        try {
             return reader.invoke(model);
-        }
-        catch (IllegalAccessException | InvocationTargetException e)
-        {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
             return null;
         }
@@ -133,14 +124,10 @@ public class JpaConditionUtils
      * @param <T>  实体类类型
      * @return 是否瞬态
      */
-    public static <T> boolean isTransient(Root<T> root, String name)
-    {
-        try
-        {
+    public static <T> boolean isTransient(Root<T> root, String name) {
+        try {
             root.get(name);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return true;
         }
         return false;
