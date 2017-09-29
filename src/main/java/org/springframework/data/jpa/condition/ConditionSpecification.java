@@ -14,8 +14,7 @@ import javax.persistence.criteria.Root;
  * @since [产品/模块版本]
  */
 @FunctionalInterface
-public interface ConditionSpecification<T> extends ParallelSpecificationSupport
-{
+public interface ConditionSpecification<T> extends ParallelSpecificationSupport {
     /**
      * Creates a WHERE clause for a query of the referenced entity in form of a {@link Predicate} for the given
      * {@link Root} and {@link CriteriaQuery}.
@@ -25,6 +24,5 @@ public interface ConditionSpecification<T> extends ParallelSpecificationSupport
      * @param cb    CriteriaBuilder
      * @param jc    JpaCondition
      */
-    void apply(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,
-        JpaCondition<T> jc);
+    void apply(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb, JpaCondition<T> jc);
 }
