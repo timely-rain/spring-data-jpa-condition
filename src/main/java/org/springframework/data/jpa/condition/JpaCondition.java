@@ -267,13 +267,12 @@ public class JpaCondition<T> {
         PropertyDescriptor end = propertyDescriptor(name + "End");
         @SuppressWarnings("unchecked") T startValue = (T) JpaConditionUtils.getPropertyValue(model, start);
         @SuppressWarnings("unchecked") T endValue = (T) JpaConditionUtils.getPropertyValue(model, end);
-        return this.between(ignoreNull, name, startValue, endValue);
+        return this.between(name, startValue, endValue);
     }
 
     /**
      * Between条件
      *
-     * @param ignoreNull 忽略空值
      * @param name       属性名
      * @param startValue 起始值
      * @param endValue   结束值
@@ -281,11 +280,15 @@ public class JpaCondition<T> {
      * @return Predicate
      * @apiNote startValue <= root.get(name) < endValue
      */
-    public <T extends Comparable<? super T>> Predicate between(boolean ignoreNull, String name, T startValue, T endValue) {
-        if (ignoreNull && (Objects.isNull(startValue) || Objects.isNull(endValue)))
+    public <T extends Comparable<? super T>> Predicate between(String name, T startValue, T endValue) {
+        if (Objects.isNull(startValue) && Objects.isNull(endValue))
             return null;
+        if (Objects.isNull(startValue))
+            return builder.lessThan(root.get(name), endValue);
+        if (Objects.isNull(endValue))
+            return builder.lessThan(root.get(name), startValue);
         Predicate s = builder.greaterThanOrEqualTo(root.get(name), startValue);
-        Predicate e = builder.greaterThanOrEqualTo(root.get(name), endValue);
+        Predicate e = builder.lessThan(root.get(name), endValue);
         return this.mergeAnd(s, e);
     }
 
