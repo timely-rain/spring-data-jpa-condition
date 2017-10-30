@@ -73,6 +73,7 @@ public class JpaCondition<T> {
      */
     protected Stream<PropertyDescriptor> propertyStreamInclude(String... names) {
         return attributeStream().map(this::propertyDescriptor)
+                .filter(Objects::nonNull)
                 .filter(JpaConditionUtils.includePredicate(names));
     }
 
@@ -84,6 +85,7 @@ public class JpaCondition<T> {
      */
     protected Stream<PropertyDescriptor> propertyStreamExclude(String... names) {
         return attributeStream().map(this::propertyDescriptor)
+                .filter(Objects::nonNull)
                 .filter(JpaConditionUtils.excludePredicate(names));
     }
 
@@ -450,13 +452,13 @@ public class JpaCondition<T> {
         return javaType;
     }
 
+
     protected Set<Attribute<? super T, ?>> attributes() {
         if (attributes == null) {
             attributes = root.getModel().getAttributes();
         }
         return attributes;
     }
-
     /* Method */
 
     /**
@@ -467,7 +469,11 @@ public class JpaCondition<T> {
      */
     protected PropertyDescriptor propertyDescriptor(
             Attribute<? super T, ?> attribute) {
-        return propertyDescriptor(attribute.getName());
+        String name = attribute.getName();
+        // 解决 PropertyDescriptor 无法正确获取 isFoo 属性的问题
+        if (name.length() > 2 && name.startsWith("is") && Character.isUpperCase(name.charAt(2)))
+            name = Character.toLowerCase(name.charAt(2)) + name.substring(3);
+        return propertyDescriptor(name);
     }
 
     /**

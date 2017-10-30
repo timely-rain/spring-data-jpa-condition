@@ -93,8 +93,8 @@ public class JpaConditionUtils {
      */
     public static Predicate<PropertyDescriptor> excludePredicate(
             String... excludes) {
-        return descriptor -> !Stream.of(excludes)
-                .anyMatch(s -> Objects.equals(s, descriptor.getName()));
+        return descriptor -> Stream.of(excludes)
+                .noneMatch(s -> Objects.equals(s, descriptor.getName()));
     }
 
     /**
@@ -105,8 +105,7 @@ public class JpaConditionUtils {
      * @param <T>        实体类类型
      * @return 属性值
      */
-    public static <T> Object getPropertyValue(T model,
-                                              PropertyDescriptor descriptor) {
+    public static <T> Object getPropertyValue(T model, PropertyDescriptor descriptor) {
         Method reader = descriptor.getReadMethod();
         try {
             return reader.invoke(model);
