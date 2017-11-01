@@ -288,7 +288,7 @@ public class JpaCondition<T> {
         if (Objects.isNull(startValue))
             return builder.lessThan(root.get(name), endValue);
         if (Objects.isNull(endValue))
-            return builder.lessThan(root.get(name), startValue);
+            return builder.greaterThanOrEqualTo(root.get(name), startValue);
         Predicate s = builder.greaterThanOrEqualTo(root.get(name), startValue);
         Predicate e = builder.lessThan(root.get(name), endValue);
         return this.mergeAnd(s, e);
