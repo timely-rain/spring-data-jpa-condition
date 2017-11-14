@@ -241,8 +241,93 @@ public class JpaCondition<T> {
      * @return Predicate
      */
     public Predicate equal(String name) {
-        return propertyPredicate(true, propertyDescriptor(name),
-                builder::equal);
+        return propertyPredicate(true, propertyDescriptor(name), builder::equal);
+    }
+
+    /**
+     * 大于
+     *
+     * @param name 属性名
+     * @return Predicate
+     */
+    public Predicate greaterThan(String name) {
+        return greaterThan(name, name);
+    }
+
+    /**
+     * 大于
+     *
+     * @param name      属性名
+     * @param valueName 取值属性名
+     * @return Predicate
+     */
+    public Predicate greaterThan(String name, String valueName) {
+        return propertyComparablePredicate(name, propertyDescriptor(valueName), builder::greaterThan);
+    }
+
+
+    /**
+     * 小于或等于
+     *
+     * @param name 属性名
+     * @return Predicate
+     */
+    public Predicate greaterThanOrEqualTo(String name) {
+        return greaterThanOrEqualTo(name, name);
+    }
+
+    /**
+     * 小于或等于
+     *
+     * @param name      属性名
+     * @param valueName 取值属性名
+     * @return Predicate
+     */
+    public Predicate greaterThanOrEqualTo(String name, String valueName) {
+        return propertyComparablePredicate(name, propertyDescriptor(valueName), builder::greaterThanOrEqualTo);
+    }
+
+
+    /**
+     * 小于
+     *
+     * @param name 属性名
+     * @return Predicate
+     */
+    public Predicate lessThan(String name) {
+        return lessThan(name, name);
+    }
+
+    /**
+     * 小于
+     *
+     * @param name      属性名
+     * @param valueName 取值属性名
+     * @return Predicate
+     */
+    public Predicate lessThan(String name, String valueName) {
+        return propertyComparablePredicate(name, propertyDescriptor(valueName), builder::lessThan);
+    }
+
+    /**
+     * 小于或等于
+     *
+     * @param name 属性名
+     * @return Predicate
+     */
+    public Predicate lessThanOrEqualTo(String name) {
+        return lessThanOrEqualTo(name, name);
+    }
+
+    /**
+     * 小于或等于
+     *
+     * @param name      属性名
+     * @param valueName 取值属性名
+     * @return Predicate
+     */
+    public Predicate lessThanOrEqualTo(String name, String valueName) {
+        return propertyComparablePredicate(name, propertyDescriptor(valueName), builder::lessThanOrEqualTo);
     }
 
     /**
@@ -322,8 +407,7 @@ public class JpaCondition<T> {
      */
     public <P, V> Predicate propertyPredicate(boolean ignoreNull, String name,
                                               BiFunction<Expression<P>, V, Predicate> function) {
-        return propertyPredicate(ignoreNull, propertyDescriptor(name),
-                function);
+        return propertyPredicate(ignoreNull, propertyDescriptor(name), function);
     }
 
     /* Custom Properties Predicate */
@@ -428,19 +512,42 @@ public class JpaCondition<T> {
     }
 
     /**
-     * 属性条件断言, 对实体类属性尝试生成条件断言
+     * 属性匹配条件断言, 对实体类属性尝试生成条件断言
      *
      * @param ignoreNull 忽略空值
      * @param descriptor 属性反射
      * @param function   BiFunction<属性表达式, 属性值, 条件断言>
      * @param <P>        属性表达式类型
+     * @param <V>        属性zhi类型
      * @return 条件断言
      */
     @SuppressWarnings("unchecked")
-    protected <P, V> Predicate propertyPredicate(boolean ignoreNull, PropertyDescriptor descriptor, BiFunction<Expression<P>, V, Predicate> function) {
+    protected <P, V> Predicate propertyPredicate(
+            boolean ignoreNull,
+            PropertyDescriptor descriptor,
+            BiFunction<Expression<P>, V, Predicate> function) {
         String name = descriptor.getName();
         Object value = JpaConditionUtils.getPropertyValue(model, descriptor);
         if (ignoreNull && value == null) return null;
+        return function.apply(root.get(name), (V) value);
+    }
+
+    /**
+     * 属性比较条件, 对实体类属性尝试生成条件断言
+     *
+     * @param descriptor 属性反射
+     * @param function   BiFunction<属性表达式, 属性值, 条件断言>
+     * @param <P>        属性表达式类型
+     * @param <V>        属性zhi类型
+     * @return 条件断言
+     */
+    @SuppressWarnings("unchecked")
+    private <P extends Comparable<? super V>, V extends Comparable> Predicate propertyComparablePredicate(
+            String name,
+            PropertyDescriptor descriptor,
+            BiFunction<Expression<P>, V, Predicate> function) {
+        Object value = JpaConditionUtils.getPropertyValue(model, descriptor);
+        if (Objects.isNull(value)) return null;
         return function.apply(root.get(name), (V) value);
     }
     /* Reader */
