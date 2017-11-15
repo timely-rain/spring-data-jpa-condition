@@ -100,9 +100,8 @@ public class JpaCondition<T> {
      * @see CriteriaBuilder
      */
     public JpaCondition clauseAnd(Predicate... restrictions) {
-        // 过滤空值
-        Predicate[] predicates = Stream.of(restrictions).filter(Objects::nonNull).toArray(Predicate[]::new);
-        Predicate and = builder.and(predicates);
+        Predicate and = mergeAnd(restrictions);
+        if (Objects.isNull(and)) return this;
         clausePredicate = Objects.isNull(clausePredicate) ? and : builder.and(clausePredicate, and);
         return this;
     }
@@ -116,9 +115,8 @@ public class JpaCondition<T> {
      * @see CriteriaBuilder
      */
     public JpaCondition clauseOr(Predicate... restrictions) {
-        // 过滤空值
-        Predicate[] predicates = Stream.of(restrictions).filter(Objects::nonNull).toArray(Predicate[]::new);
-        Predicate or = builder.or(predicates);
+        Predicate or = mergeOr(restrictions);
+        if (Objects.isNull(or)) return this;
         clausePredicate = Objects.isNull(clausePredicate) ? or : builder.or(clausePredicate, or);
         return this;
     }
@@ -132,7 +130,10 @@ public class JpaCondition<T> {
      * @see CriteriaBuilder
      */
     public Predicate mergeAnd(Predicate... restrictions) {
-        return builder.and(restrictions);
+        // 过滤空值
+        Predicate[] predicates = Stream.of(restrictions).filter(Objects::nonNull).toArray(Predicate[]::new);
+        if (predicates.length == 0) return null;
+        return builder.and(predicates);
     }
 
     /**
@@ -144,7 +145,10 @@ public class JpaCondition<T> {
      * @see CriteriaBuilder
      */
     public Predicate mergeOr(Predicate... restrictions) {
-        return builder.or(restrictions);
+        // 过滤空值
+        Predicate[] predicates = Stream.of(restrictions).filter(Objects::nonNull).toArray(Predicate[]::new);
+        if (predicates.length == 0) return null;
+        return builder.or(predicates);
     }
 
     /* Predicate Factory */
