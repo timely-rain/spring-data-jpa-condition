@@ -29,7 +29,7 @@ public class JpaConditionUtils {
    * @param root Root
    * @param query CriteriaQuery
    * @param cb CriteriaBuilder
-   * @param model 实体类
+   * @param model 瞬态对象
    * @param <T> 实体类类型
    * @return JpaCondition<T>
    */
@@ -41,7 +41,7 @@ public class JpaConditionUtils {
   /**
    * 生成JPA查询明细
    *
-   * @param model 实体类
+   * @param model 瞬态对象
    * @param specifications ConditionSpecification
    * @param <S> 实体类类型
    * @return Specification
@@ -99,15 +99,18 @@ public class JpaConditionUtils {
   }
 
   /**
-   * 获取实体类的属性值
+   * 获取瞬态对象的属性值
    *
-   * @param model 实体类
+   * @param model 瞬态对象
    * @param descriptor spring-beans属性
    * @param <T> 实体类类型
    * @return 属性值
    */
   public static <T> Object getPropertyValue(T model,
       PropertyDescriptor descriptor) {
+    if (Objects.isNull(model)) {
+      return null;
+    }
     Method reader = descriptor.getReadMethod();
     try {
       return reader.invoke(model);
@@ -120,7 +123,7 @@ public class JpaConditionUtils {
   /**
    * 判断属性是否瞬态
    *
-   * @param root 实体类映射
+   * @param root 持久化对象映射
    * @param name 属性名
    * @param <T> 实体类类型
    * @return 是否瞬态
