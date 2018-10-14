@@ -1,10 +1,10 @@
 package org.springframework.data.jpa.condition;
 
+import java.util.List;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.List;
 
 /**
  * 平行式 Spring Data JPA 查询规格
@@ -15,17 +15,17 @@ import java.util.List;
  * @since [产品/模块版本]
  */
 @FunctionalInterface
-public interface ParallelSpecification<T> extends ParallelSpecificationSupport
-{
-    /**
-     * Creates a WHERE clause for a query of the referenced entity in form of a {@link Predicate} for the given
-     * {@link Root} and {@link CriteriaQuery}.
-     *
-     * @param root       Root
-     * @param query      CriteriaQuery
-     * @param cb         CriteriaBuilder
-     * @param predicates List<Predicate>
-     */
-    void apply(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,
-        List<Predicate> predicates);
+public interface ParallelSpecification<T> extends ParallelSpecificationSupport {
+
+  /**
+   * Creates a WHERE clause for a query of the referenced entity in form of a {@link Predicate} for
+   * the given {@link Root} and {@link CriteriaQuery}.
+   *
+   * @param root Root
+   * @param query CriteriaQuery
+   * @param cb CriteriaBuilder
+   * @param predicates List<Predicate>
+   */
+  void apply(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,
+      List<Predicate> predicates);
 }
