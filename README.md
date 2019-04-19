@@ -1,6 +1,8 @@
+[morn-boot-project]:https://github.com/morn-team/morn-boot-projects
+
 # Spring Data JPA Condition
 
-已停止更新，后续内容在morn-boot-project中开发
+已停止更新，后续内容在[morn-boot-project][morn-boot-project]中开发
 
 Spring Data JPA 动态查询工具类，用于快速生成动态查询的查询条件
 
